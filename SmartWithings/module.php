@@ -168,55 +168,72 @@ class SmartWithings extends IPSModule {
         }
 
         $lastUpdate = $this->ReadPropertyInteger("LastUpdate");
-        
-        $postData = [
-            'action' => 'getmeas',
-            'lastupdate' => $lastUpdate
-        ];
+        $highestUpdate = $lastUpdate;
+        $offset = 0;
+        $pages = 0;
 
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, "https://wbsapi.withings.net/measure");
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_POST, true);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($postData));
-        curl_setopt($ch, CURLOPT_HTTPHEADER, [
-            "Authorization: Bearer " . $accessToken
-        ]);
-        $response = curl_exec($ch);
-        curl_close($ch);
+        do {
+            $postData = [
+                'action' => 'getmeas',
+                'lastupdate' => $lastUpdate
+            ];
+            if ($offset > 0) {
+                $postData['offset'] = $offset;
+            }
 
-        $data = json_decode($response, true);
-        if (isset($data['status']) && $data['status'] == 0) {
-            $highestUpdate = $lastUpdate;
-            if (isset($data['body']['measuregrps']) && is_array($data['body']['measuregrps'])) {
-                foreach ($data['body']['measuregrps'] as $grp) {
-                    if (isset($grp['modified'])) {
-                        $highestUpdate = max($highestUpdate, $grp['modified']);
-                    }
-                    $grpDate = isset($grp['date']) ? $grp['date'] : time();
-                    if (isset($grp['date'])) {
-                        $highestUpdate = max($highestUpdate, $grp['date']);
-                    }
-                    if (isset($grp['measures']) && is_array($grp['measures'])) {
-                        foreach ($grp['measures'] as $measure) {
-                            $this->ProcessMeasurement($measure, $grpDate);
+            $ch = curl_init();
+            curl_setopt($ch, CURLOPT_URL, "https://wbsapi.withings.net/measure");
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_POST, true);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($postData));
+            curl_setopt($ch, CURLOPT_HTTPHEADER, [
+                "Authorization: Bearer " . $accessToken
+            ]);
+            $response = curl_exec($ch);
+            curl_close($ch);
+
+            $data = json_decode($response, true);
+            if (isset($data['status']) && $data['status'] == 0) {
+                if (isset($data['body']['measuregrps']) && is_array($data['body']['measuregrps'])) {
+                    foreach ($data['body']['measuregrps'] as $grp) {
+                        if (isset($grp['modified'])) {
+                            $highestUpdate = max($highestUpdate, $grp['modified']);
+                        }
+                        $grpDate = isset($grp['date']) ? $grp['date'] : time();
+                        if (isset($grp['date'])) {
+                            $highestUpdate = max($highestUpdate, $grp['date']);
+                        }
+                        if (isset($grp['measures']) && is_array($grp['measures'])) {
+                            foreach ($grp['measures'] as $measure) {
+                                $this->ProcessMeasurement($measure, $grpDate);
+                            }
                         }
                     }
                 }
+                
+                $pages++;
+                if (isset($data['body']['more']) && $data['body']['more'] == 1 && isset($data['body']['offset'])) {
+                    $offset = $data['body']['offset'];
+                } else {
+                    $offset = 0; // stop
+                }
+
+                // Security stop after 50 pages to prevent endless loop / timeout
+                if ($pages > 50) {
+                    $offset = 0;
+                }
+
+            } else {
+                $this->SendDebug("Fetch", "Fehler beim Abruf: " . $response, 0);
+                $offset = 0; // stop on error
             }
-            
-            if ($highestUpdate > $lastUpdate) {
-                // Property Update umgeht ApplyChanges, wenn direkt per IPS_SetProperty gemacht, 
-                // aber hier machen wir es regulär (was ApplyChanges auslöst, was aber unkritisch ist, 
-                // da wir FetchInterval ohnehin schon gesetzt haben).
-                // Besser: IPS_SetProperty aufrufen, aber nicht ApplyChanges, damit das Modul nicht dauernd neu startet.
-                IPS_SetProperty($this->InstanceID, "LastUpdate", $highestUpdate);
-                IPS_ApplyChanges($this->InstanceID); 
-            }
-            $this->SendDebug("Fetch", "Abruf erfolgreich beendet.", 0);
-        } else {
-            $this->SendDebug("Fetch", "Fehler beim Abruf: " . $response, 0);
+        } while ($offset > 0);
+        
+        if ($highestUpdate > $lastUpdate) {
+            IPS_SetProperty($this->InstanceID, "LastUpdate", $highestUpdate);
+            IPS_ApplyChanges($this->InstanceID); 
         }
+        $this->SendDebug("Fetch", "Abruf erfolgreich beendet (" . $pages . " Seiten).", 0);
     }
 
     private function ProcessMeasurement($measure, $timestamp) {
