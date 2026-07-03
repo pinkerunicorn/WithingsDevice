@@ -26,8 +26,6 @@ class SmartWithings extends IPSModule {
 
         $interval = $this->ReadPropertyInteger("FetchInterval");
         $this->SetTimerInterval("FetchTimer", $interval * 60 * 1000);
-
-        $this->CreateCustomProfiles();
     }
 
     private function RegisterHook($WebHook) {
@@ -234,29 +232,29 @@ class SmartWithings extends IPSModule {
         $profile = "";
 
         switch ($type) {
-            case 1: $name = "Gewicht"; $profile = "~Weight"; break;
-            case 4: $name = "Größe"; $profile = ""; break; // m
-            case 5: $name = "Fettfreie Masse"; $profile = "~Weight"; break;
-            case 6: $name = "Körperfett"; $profile = "SWA.Percentage"; break;
-            case 8: $name = "Fettmasse"; $profile = "~Weight"; break;
-            case 9: $name = "Blutdruck (Diastolisch)"; $profile = "SWA.BloodPressure"; break;
-            case 10: $name = "Blutdruck (Systolisch)"; $profile = "SWA.BloodPressure"; break;
-            case 11: $name = "Herzfrequenz"; $profile = "SWA.HeartRate"; break;
+            case 1: $name = "Gewicht"; break;
+            case 4: $name = "Größe"; break;
+            case 5: $name = "Fettfreie Masse"; break;
+            case 6: $name = "Körperfett"; break;
+            case 8: $name = "Fettmasse"; break;
+            case 9: $name = "Blutdruck (Diastolisch)"; break;
+            case 10: $name = "Blutdruck (Systolisch)"; break;
+            case 11: $name = "Herzfrequenz"; break;
             case 12: 
             case 71: 
-            case 73: $name = "Temperatur"; $profile = "~Temperature"; break;
-            case 76: $name = "Muskelmasse"; $profile = "~Weight"; break;
-            case 77: $name = "Wasseranteil"; $profile = "~Weight"; break;
-            case 88: $name = "Knochenmasse"; $profile = "~Weight"; break;
-            case 91: $name = "Pulswellengeschwindigkeit"; $profile = "SWA.Velocity"; break;
-            case 123: $name = "VO2 Max"; $profile = ""; break;
-            case 130: $name = "Viszeralfett"; $profile = ""; break;
-            case 135: $name = "Gefäßalter"; $profile = "SWA.Years"; break;
-            case 136: $name = "Nervenaktivität"; $profile = ""; break;
+            case 73: $name = "Temperatur"; break;
+            case 76: $name = "Muskelmasse"; break;
+            case 77: $name = "Wasseranteil"; break;
+            case 88: $name = "Knochenmasse"; break;
+            case 91: $name = "Pulswellengeschwindigkeit"; break;
+            case 123: $name = "VO2 Max"; break;
+            case 130: $name = "Viszeralfett"; break;
+            case 135: $name = "Gefäßalter"; break;
+            case 136: $name = "Nervenaktivität"; break;
             // Body Scan segmented data
-            case 170: $name = "Körperfett Rumpf"; $profile = "SWA.Percentage"; break;
-            case 171: $name = "Körperfett Arme"; $profile = "SWA.Percentage"; break;
-            case 172: $name = "Körperfett Beine"; $profile = "SWA.Percentage"; break;
+            case 170: $name = "Körperfett Rumpf"; break;
+            case 171: $name = "Körperfett Arme"; break;
+            case 172: $name = "Körperfett Beine"; break;
         }
 
         // Variable dynamisch anlegen falls nicht existent
@@ -280,34 +278,8 @@ class SmartWithings extends IPSModule {
             $identCache[$ident] = true;
         }
 
-        $this->SetValue($ident, $value);
-    }
-
-    private function CreateCustomProfiles() {
-        if (!IPS_VariableProfileExists("SWA.Percentage")) {
-            IPS_CreateVariableProfile("SWA.Percentage", 2);
-            IPS_SetVariableProfileText("SWA.Percentage", "", " %");
-            IPS_SetVariableProfileDigits("SWA.Percentage", 1);
-        }
-        if (!IPS_VariableProfileExists("SWA.Velocity")) {
-            IPS_CreateVariableProfile("SWA.Velocity", 2);
-            IPS_SetVariableProfileText("SWA.Velocity", "", " m/s");
-            IPS_SetVariableProfileDigits("SWA.Velocity", 2);
-        }
-        if (!IPS_VariableProfileExists("SWA.BloodPressure")) {
-            IPS_CreateVariableProfile("SWA.BloodPressure", 2);
-            IPS_SetVariableProfileText("SWA.BloodPressure", "", " mmHg");
-            IPS_SetVariableProfileDigits("SWA.BloodPressure", 0);
-        }
-        if (!IPS_VariableProfileExists("SWA.HeartRate")) {
-            IPS_CreateVariableProfile("SWA.HeartRate", 2);
-            IPS_SetVariableProfileText("SWA.HeartRate", "", " bpm");
-            IPS_SetVariableProfileDigits("SWA.HeartRate", 0);
-        }
-        if (!IPS_VariableProfileExists("SWA.Years")) {
-            IPS_CreateVariableProfile("SWA.Years", 2);
-            IPS_SetVariableProfileText("SWA.Years", "", " Jahre");
-            IPS_SetVariableProfileDigits("SWA.Years", 1);
+        if (@IPS_GetObjectIDByIdent($ident, $this->InstanceID) !== false) {
+            $this->SetValue($ident, $value);
         }
     }
 }
