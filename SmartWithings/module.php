@@ -260,16 +260,24 @@ class SmartWithings extends IPSModule {
         }
 
         // Variable dynamisch anlegen falls nicht existent
-        if (!@IPS_GetObjectIDByIdent($ident, $this->InstanceID)) {
-            $this->RegisterVariableFloat($ident, $name, $profile, 0);
+        $identCache =& $this->createdIdents;
+        if (!isset($identCache)) {
+            $identCache = [];
+        }
+
+        if (!isset($identCache[$ident]) && !@IPS_GetObjectIDByIdent($ident, $this->InstanceID)) {
+            $this->MaintainVariable($ident, $name, 2 /* Float */, $profile, 0, true);
             
             // Logging aktivieren
-            $varId = IPS_GetObjectIDByIdent($ident, $this->InstanceID);
-            $archiveIds = IPS_GetInstanceListByModuleID("{43192F0B-135B-4CE7-A0A7-1475603F3060}");
-            if (count($archiveIds) > 0) {
-                AC_SetLoggingStatus($archiveIds[0], $varId, true);
-                IPS_ApplyChanges($archiveIds[0]);
+            $varId = @IPS_GetObjectIDByIdent($ident, $this->InstanceID);
+            if ($varId !== false) {
+                $archiveIds = IPS_GetInstanceListByModuleID("{43192F0B-135B-4CE7-A0A7-1475603F3060}");
+                if (count($archiveIds) > 0) {
+                    @AC_SetLoggingStatus($archiveIds[0], $varId, true);
+                    @IPS_ApplyChanges($archiveIds[0]);
+                }
             }
+            $identCache[$ident] = true;
         }
 
         $this->SetValue($ident, $value);
