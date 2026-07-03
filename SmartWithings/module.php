@@ -255,6 +255,10 @@ class SmartWithings extends IPSModule {
             case 170: $name = "Körperfett Rumpf"; break;
             case 171: $name = "Körperfett Arme"; break;
             case 172: $name = "Körperfett Beine"; break;
+            // Newer Body Scan metrics (EDA / Nerve Health)
+            case 196: $name = "Nervenaktivität Score"; break;
+            case 197: $name = "Nervenaktivität (Fuß links)"; break;
+            case 198: $name = "Nervenaktivität (Fuß rechts)"; break;
         }
 
         // Variable dynamisch anlegen falls nicht existent
