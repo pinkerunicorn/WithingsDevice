@@ -26,6 +26,8 @@ class SmartWithings extends IPSModule {
 
         $interval = $this->ReadPropertyInteger("FetchInterval");
         $this->SetTimerInterval("FetchTimer", $interval * 60 * 1000);
+
+        $this->UpdatePresentations();
     }
 
     private function RegisterHook($WebHook) {
@@ -236,18 +238,8 @@ class SmartWithings extends IPSModule {
         $this->SendDebug("Fetch", "Abruf erfolgreich beendet (" . $pages . " Seiten).", 0);
     }
 
-    private function ProcessMeasurement($measure, $timestamp) {
-        if (!isset($measure['type']) || !isset($measure['value'])) {
-            return;
-        }
-        $type = $measure['type'];
-        $unit = isset($measure['unit']) ? $measure['unit'] : 0;
-        $value = $measure['value'] * pow(10, $unit);
-
-        $ident = "Measure_" . $type;
+    private function GetMeasurementConfig($type) {
         $name = "Messwert Typ " . $type;
-        $profile = "";
-
         $suffix = "";
         $icon = "";
 
@@ -290,6 +282,48 @@ class SmartWithings extends IPSModule {
             case 227: $name = "Metabolisches Alter"; $suffix = " Jahre"; $icon = "Clock"; break;
         }
 
+        return [
+            'name' => $name,
+            'suffix' => $suffix,
+            'icon' => $icon
+        ];
+    }
+
+    private function UpdatePresentations() {
+        $children = IPS_GetChildrenIDs($this->InstanceID);
+        foreach ($children as $childID) {
+            $obj = IPS_GetObject($childID);
+            $ident = $obj['ObjectIdent'];
+            if (strpos($ident, "Measure_") === 0) {
+                $type = (int)substr($ident, 8);
+                $config = $this->GetMeasurementConfig($type);
+                
+                IPS_SetName($childID, $config['name']);
+                
+                if (function_exists('IPS_SetVariableCustomPresentation')) {
+                    if ($config['suffix'] != "") {
+                        IPS_SetVariableCustomPresentation($childID, ['SUFFIX' => $config['suffix']]);
+                    }
+                }
+                
+                if ($config['icon'] != "") {
+                    IPS_SetIcon($childID, $config['icon']);
+                }
+            }
+        }
+    }
+
+    private function ProcessMeasurement($measure, $timestamp) {
+        if (!isset($measure['type']) || !isset($measure['value'])) {
+            return;
+        }
+        $type = $measure['type'];
+        $unit = isset($measure['unit']) ? $measure['unit'] : 0;
+        $value = $measure['value'] * pow(10, $unit);
+
+        $ident = "Measure_" . $type;
+        $config = $this->GetMeasurementConfig($type);
+
         // Variable dynamisch anlegen falls nicht existent
         $identCache =& $this->createdIdents;
         if (!isset($identCache)) {
@@ -297,7 +331,7 @@ class SmartWithings extends IPSModule {
         }
 
         if (!isset($identCache[$ident])) {
-            $this->MaintainVariable($ident, $name, 2, "", 0, true);
+            $this->MaintainVariable($ident, $config['name'], 2, "", 0, true);
             $varID = @IPS_GetObjectIDByIdent($ident, $this->InstanceID);
             
             if ($varID !== false) {
@@ -308,13 +342,13 @@ class SmartWithings extends IPSModule {
                 }
                 
                 if (function_exists('IPS_SetVariableCustomPresentation')) {
-                    if ($suffix != "") {
-                        IPS_SetVariableCustomPresentation($varID, ['SUFFIX' => $suffix]);
+                    if ($config['suffix'] != "") {
+                        IPS_SetVariableCustomPresentation($varID, ['SUFFIX' => $config['suffix']]);
                     }
                 }
                 
-                if ($icon != "") {
-                    IPS_SetIcon($varID, $icon);
+                if ($config['icon'] != "") {
+                    IPS_SetIcon($varID, $config['icon']);
                 }
             }
             
