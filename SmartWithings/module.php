@@ -34,6 +34,9 @@ class SmartWithings extends IPSModule {
         $ids = IPS_GetInstanceListByModuleID("{015A6EB8-D6E5-4B93-B496-0D3F77AE9FE1}");
         if (count($ids) > 0) {
             $hooks = json_decode(IPS_GetProperty($ids[0], "Hooks"), true);
+            if (!is_array($hooks)) {
+                $hooks = [];
+            }
             $found = false;
             foreach ($hooks as $index => $hook) {
                 if ($hook['Hook'] == $WebHook) {
@@ -187,17 +190,18 @@ class SmartWithings extends IPSModule {
         $data = json_decode($response, true);
         if (isset($data['status']) && $data['status'] == 0) {
             $highestUpdate = $lastUpdate;
-            if (isset($data['body']['measuregrps'])) {
+            if (isset($data['body']['measuregrps']) && is_array($data['body']['measuregrps'])) {
                 foreach ($data['body']['measuregrps'] as $grp) {
                     if (isset($grp['modified'])) {
                         $highestUpdate = max($highestUpdate, $grp['modified']);
                     }
+                    $grpDate = isset($grp['date']) ? $grp['date'] : time();
                     if (isset($grp['date'])) {
                         $highestUpdate = max($highestUpdate, $grp['date']);
                     }
-                    if (isset($grp['measures'])) {
+                    if (isset($grp['measures']) && is_array($grp['measures'])) {
                         foreach ($grp['measures'] as $measure) {
-                            $this->ProcessMeasurement($measure, $grp['date']);
+                            $this->ProcessMeasurement($measure, $grpDate);
                         }
                     }
                 }
@@ -218,8 +222,12 @@ class SmartWithings extends IPSModule {
     }
 
     private function ProcessMeasurement($measure, $timestamp) {
+        if (!isset($measure['type']) || !isset($measure['value'])) {
+            return;
+        }
         $type = $measure['type'];
-        $value = $measure['value'] * pow(10, $measure['unit']);
+        $unit = isset($measure['unit']) ? $measure['unit'] : 0;
+        $value = $measure['value'] * pow(10, $unit);
 
         $ident = "Measure_" . $type;
         $name = "Messwert Typ " . $type;
