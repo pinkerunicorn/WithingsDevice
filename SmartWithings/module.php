@@ -17,6 +17,8 @@ class SmartWithings extends IPSModule {
         $this->RegisterAttributeInteger("TokenExpires", 0);
 
         $this->RegisterTimer("FetchTimer", 0, 'SWA_FetchMeasurements($_IPS[\'TARGET\']);');
+
+        $this->MaintainVariable("LastMeasurement", "Letzte Messung", 3, "", 0, true);
     }
 
     public function ApplyChanges() {
@@ -26,6 +28,11 @@ class SmartWithings extends IPSModule {
 
         $interval = $this->ReadPropertyInteger("FetchInterval");
         $this->SetTimerInterval("FetchTimer", $interval * 60 * 1000);
+
+        $varID = @IPS_GetObjectIDByIdent("LastMeasurement", $this->InstanceID);
+        if ($varID !== false) {
+            IPS_SetIcon($varID, "Clock");
+        }
 
         $this->UpdatePresentations();
     }
@@ -171,6 +178,7 @@ class SmartWithings extends IPSModule {
 
         $lastUpdate = $this->ReadPropertyInteger("LastUpdate");
         $highestUpdate = $lastUpdate;
+        $highestMeasurementDate = 0;
         $offset = 0;
         $pages = 0;
 
@@ -204,6 +212,7 @@ class SmartWithings extends IPSModule {
                         $grpDate = isset($grp['date']) ? $grp['date'] : time();
                         if (isset($grp['date'])) {
                             $highestUpdate = max($highestUpdate, $grp['date']);
+                            $highestMeasurementDate = max($highestMeasurementDate, $grp['date']);
                         }
                         if (isset($grp['measures']) && is_array($grp['measures'])) {
                             foreach ($grp['measures'] as $measure) {
@@ -235,6 +244,15 @@ class SmartWithings extends IPSModule {
             IPS_SetProperty($this->InstanceID, "LastUpdate", $highestUpdate);
             IPS_ApplyChanges($this->InstanceID); 
         }
+
+        if ($highestMeasurementDate > 0) {
+            $currentStr = $this->GetValue("LastMeasurement");
+            $currentTs = $currentStr ? strtotime($currentStr) : 0;
+            if ($highestMeasurementDate > $currentTs) {
+                $this->SetValue("LastMeasurement", date("d.m.Y H:i:s", $highestMeasurementDate));
+            }
+        }
+
         $this->SendDebug("Fetch", "Abruf erfolgreich beendet (" . $pages . " Seiten).", 0);
     }
 
