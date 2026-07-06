@@ -161,9 +161,15 @@ class SmartWithings extends IPSModule {
         return false;
     }
 
+    protected function LogMessage(string $text): void
+    {
+        IPS_LogMessage('SmartVillaKunterbunt', 'SmartWithings: ' . $text);
+    }
+
     public function FetchMeasurements() {
         $accessToken = $this->ReadAttributeString("AccessToken");
         if ($accessToken == "") {
+            $this->LogMessage("Kein Access Token vorhanden. Bitte autorisieren.");
             $this->SendDebug("Fetch", "Kein Access Token vorhanden.", 0);
             return;
         }
@@ -171,6 +177,7 @@ class SmartWithings extends IPSModule {
         if (time() > $this->ReadAttributeInteger("TokenExpires")) {
             $this->SendDebug("Fetch", "Token abgelaufen, versuche Refresh...", 0);
             if (!$this->RefreshToken()) {
+                $this->LogMessage("Token-Refresh fehlgeschlagen!");
                 return;
             }
             $accessToken = $this->ReadAttributeString("AccessToken");
@@ -181,6 +188,7 @@ class SmartWithings extends IPSModule {
         $highestMeasurementDate = 0;
         $offset = 0;
         $pages = 0;
+        $newMeasurements = 0;
 
         do {
             $postData = [
@@ -217,6 +225,7 @@ class SmartWithings extends IPSModule {
                         if (isset($grp['measures']) && is_array($grp['measures'])) {
                             foreach ($grp['measures'] as $measure) {
                                 $this->ProcessMeasurement($measure, $grpDate);
+                                $newMeasurements++;
                             }
                         }
                     }
@@ -235,6 +244,7 @@ class SmartWithings extends IPSModule {
                 }
 
             } else {
+                $this->LogMessage("Fehler beim Abruf der Messwerte.");
                 $this->SendDebug("Fetch", "Fehler beim Abruf: " . $response, 0);
                 $offset = 0; // stop on error
             }
@@ -253,6 +263,9 @@ class SmartWithings extends IPSModule {
             }
         }
 
+        if ($newMeasurements > 0) {
+            $this->LogMessage("Abruf erfolgreich. $newMeasurements neue Messwerte verarbeitet.");
+        }
         $this->SendDebug("Fetch", "Abruf erfolgreich beendet (" . $pages . " Seiten).", 0);
     }
 
