@@ -78,6 +78,11 @@
             "type": "Button",
             "label": "Daten jetzt manuell abrufen",
             "onClick": "WITHINGS_FetchMeasurements($id);"
+        },
+        {
+            "type": "Button",
+            "label": "KI Auswertung (inkl. Mail) jetzt testen",
+            "onClick": "WITHINGS_EvaluateWithGemini($id);"
         }
     ]
 }
