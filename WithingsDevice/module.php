@@ -14,7 +14,7 @@ class WithingsDevice extends IPSModule {
         // AI Properties
         $this->RegisterPropertyBoolean("EnableAI", false);
         $this->RegisterPropertyString("GeminiApiKey", "");
-        $this->RegisterPropertyString("GeminiModel", "gemini-1.5-flash");
+        $this->RegisterPropertyString("GeminiModel", "gemini-3.5-flash");
         $this->RegisterPropertyInteger("ArchiveDays", 28);
         $this->RegisterPropertyInteger("SMTPInstanceID", 0);
 

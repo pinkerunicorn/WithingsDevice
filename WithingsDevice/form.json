@@ -52,8 +52,7 @@
             "name": "GeminiModel",
             "caption": "Gemini Modell",
             "options": [
-                { "label": "Gemini 1.5 Flash (Schnell & Günstig)", "value": "gemini-1.5-flash" },
-                { "label": "Gemini 1.5 Pro (Besser & Teurer)", "value": "gemini-1.5-pro" }
+                { "label": "Gemini 3.5 Flash (Empfohlen)", "value": "gemini-3.5-flash" }
             ]
         },
         {
