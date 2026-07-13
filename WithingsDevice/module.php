@@ -509,5 +509,11 @@ class WithingsDevice extends IPSModule {
             $this->Log("Fehler bei Gemini API (HTTP $httpCode): " . substr($result, 0, 200));
         }
     }
+
+    protected function LogMessage($Message, $KL_MESSAGE = KL_MESSAGE)
+    {
+        IPS_LogMessage('SmartVillaKunterbunt', 'WithingsDevice: ' . $Message);
+    }
 }
+
 ?>
