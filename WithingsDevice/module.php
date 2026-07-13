@@ -99,7 +99,7 @@ class WithingsDevice extends IPSModuleStrict {
         echo "Bitte öffne diesen Link im Browser, um Symcon mit Withings zu verbinden:\n\n" . $url;
     }
 
-    protected function ProcessHookData(): string {
+    protected function ProcessHookData(): void {
         $this->SendDebug("WebHook", "Daten empfangen: " . print_r($_GET, true), 0);
 
         if (isset($_GET['code'])) {
@@ -120,9 +120,9 @@ class WithingsDevice extends IPSModuleStrict {
             ];
 
             $this->RequestTokens($postData);
-            return "Erfolgreich autorisiert! Du kannst dieses Fenster nun schließen und in Symcon auf 'Daten jetzt manuell abrufen' klicken.";
+            echo "Erfolgreich autorisiert! Du kannst dieses Fenster nun schließen und in Symcon auf 'Daten jetzt manuell abrufen' klicken."; return;
         } else {
-            return "Kein Code empfangen.";
+            echo "Kein Code empfangen."; return;
         }
     }
 
