@@ -510,10 +510,9 @@ class WithingsDevice extends IPSModule {
         }
     }
 
-    protected function LogMessage(string $Message, int $Type): bool
+    protected function LogMessage($Message, $Type)
     {
         IPS_LogMessage('SmartVillaKunterbunt', 'WithingsDevice: ' . $Message);
-        return true;
     }
 }
 
