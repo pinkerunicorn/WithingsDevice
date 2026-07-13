@@ -31,6 +31,14 @@ class WithingsDevice extends IPSModuleStrict {
 
     public function ApplyChanges(): void{
         parent::ApplyChanges();
+        // --- Auto-generated References ---
+        $ref_SMTPInstanceID = $this->ReadPropertyInteger('SMTPInstanceID');
+        if ($ref_SMTPInstanceID > 1 && @IPS_ObjectExists($ref_SMTPInstanceID)) {
+            $this->RegisterReference($ref_SMTPInstanceID);
+        }
+        // ---------------------------------
+
+
         
         $this->RegisterHook("/hook/withings");
 
