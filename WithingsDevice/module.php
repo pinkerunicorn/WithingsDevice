@@ -25,7 +25,7 @@ class WithingsDevice extends IPSModuleStrict {
 
         $this->RegisterTimer("FetchTimer", 0, 'WITHINGS_FetchMeasurements($_IPS[\'TARGET\']);');
 
-        $this->MaintainVariable("LastMeasurement", "⏱️ Letzte Messung", 3, "", 0, true);
+        $this->MaintainVariable("LastMeasurement", "⏱ Letzte Messung", 3, "", 0, true);
         $this->MaintainVariable("DailyReport", "🧠 Gemini Analyse", 3, "", 1, true);
     }
 
@@ -71,7 +71,7 @@ class WithingsDevice extends IPSModuleStrict {
                 }
             }
             if (!$found) {
-                $hooks[] = ['Hook' => $HookPath, 'TargetID' => $this->InstanceID];
+                $hooks[] = ['Hook'=> $HookPath, 'TargetID'=> $this->InstanceID];
             }
             IPS_SetProperty($ids[0], "Hooks", json_encode($hooks));
             IPS_ApplyChanges($ids[0]);
@@ -88,7 +88,7 @@ class WithingsDevice extends IPSModuleStrict {
             }
         }
         // Fallback to local IP if Connect is not active
-        return "http://" . $_SERVER['HTTP_HOST'] . "/hook/withings";
+        return "http://". $_SERVER['HTTP_HOST'] . "/hook/withings";
     }
 
     public function GetAuthURL() {
@@ -104,31 +104,31 @@ class WithingsDevice extends IPSModuleStrict {
 
         $url = "https://account.withings.com/oauth2_user/authorize2?response_type=code&client_id={$clientId}&redirect_uri={$redirectUri}&scope={$scope}&state={$state}";
         
-        echo "Bitte öffne diesen Link im Browser, um Symcon mit Withings zu verbinden:\n\n" . $url;
+        echo "Bitte öffne diesen Link im Browser, um Symcon mit Withings zu verbinden:\n\n". $url;
     }
 
     protected function ProcessHookData(): void {
-        $this->SendDebug("WebHook", "Daten empfangen: " . print_r($_GET, true), 0);
+        $this->SendDebug("WebHook", "Daten empfangen: ". print_r($_GET, true), 0);
 
         if (isset($_GET['code'])) {
             $code = $_GET['code'];
-            $this->SendDebug("WebHook", "Auth-Code erhalten: " . $code, 0);
+            $this->SendDebug("WebHook", "Auth-Code erhalten: ". $code, 0);
 
             $clientId = $this->ReadPropertyString("ClientID");
             $clientSecret = $this->ReadPropertyString("ClientSecret");
             $redirectUri = $this->GetRedirectURI();
 
             $postData = [
-                'action' => 'requesttoken',
-                'grant_type' => 'authorization_code',
-                'client_id' => $clientId,
-                'client_secret' => $clientSecret,
-                'code' => $code,
-                'redirect_uri' => $redirectUri
+                'action'=> 'requesttoken',
+                'grant_type'=> 'authorization_code',
+                'client_id'=> $clientId,
+                'client_secret'=> $clientSecret,
+                'code'=> $code,
+                'redirect_uri'=> $redirectUri
             ];
 
             $this->RequestTokens($postData);
-            echo "Erfolgreich autorisiert! Du kannst dieses Fenster nun schließen und in Symcon auf 'Daten jetzt manuell abrufen' klicken."; return;
+            echo "Erfolgreich autorisiert! Du kannst dieses Fenster nun schließen und in Symcon auf 'Daten jetzt manuell abrufen'klicken."; return;
         } else {
             echo "Kein Code empfangen."; return;
         }
@@ -145,11 +145,11 @@ class WithingsDevice extends IPSModuleStrict {
         $clientSecret = $this->ReadPropertyString("ClientSecret");
 
         $postData = [
-            'action' => 'requesttoken',
-            'grant_type' => 'refresh_token',
-            'client_id' => $clientId,
-            'client_secret' => $clientSecret,
-            'refresh_token' => $refreshToken
+            'action'=> 'requesttoken',
+            'grant_type'=> 'refresh_token',
+            'client_id'=> $clientId,
+            'client_secret'=> $clientSecret,
+            'refresh_token'=> $refreshToken
         ];
 
         return $this->RequestTokens($postData);
@@ -164,7 +164,7 @@ class WithingsDevice extends IPSModuleStrict {
         $response = curl_exec($ch);
         curl_close($ch);
 
-        $this->SendDebug("OAuth", "Token Response: " . $response, 0);
+        $this->SendDebug("OAuth", "Token Response: ". $response, 0);
         $data = json_decode($response, true);
 
         if (isset($data['status']) && $data['status'] == 0 && isset($data['body']['access_token'])) {
@@ -180,7 +180,7 @@ class WithingsDevice extends IPSModuleStrict {
 
     protected function Log(string $text): void
     {
-        IPS_LogMessage('SmartVillaKunterbunt', 'WithingsDevice: ' . $text);
+        IPS_LogMessage('SmartVillaKunterbunt', 'WithingsDevice: '. $text);
     }
 
     public function FetchMeasurements() {
@@ -209,8 +209,8 @@ class WithingsDevice extends IPSModuleStrict {
 
         do {
             $postData = [
-                'action' => 'getmeas',
-                'lastupdate' => $lastUpdate
+                'action'=> 'getmeas',
+                'lastupdate'=> $lastUpdate
             ];
             if ($offset > 0) {
                 $postData['offset'] = $offset;
@@ -222,7 +222,7 @@ class WithingsDevice extends IPSModuleStrict {
             curl_setopt($ch, CURLOPT_POST, true);
             curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($postData));
             curl_setopt($ch, CURLOPT_HTTPHEADER, [
-                "Authorization: Bearer " . $accessToken
+                "Authorization: Bearer ". $accessToken
             ]);
             $response = curl_exec($ch);
             curl_close($ch);
@@ -262,7 +262,7 @@ class WithingsDevice extends IPSModuleStrict {
 
             } else {
                 $this->Log("Fehler beim Abruf der Messwerte.");
-                $this->SendDebug("Fetch", "Fehler beim Abruf: " . $response, 0);
+                $this->SendDebug("Fetch", "Fehler beim Abruf: ". $response, 0);
                 $offset = 0; // stop on error
             }
         } while ($offset > 0);
@@ -286,57 +286,57 @@ class WithingsDevice extends IPSModuleStrict {
                 $this->EvaluateWithGemini();
             }
         }
-        $this->SendDebug("Fetch", "Abruf erfolgreich beendet (" . $pages . " Seiten).", 0);
+        $this->SendDebug("Fetch", "Abruf erfolgreich beendet (". $pages . "Seiten).", 0);
     }
 
     private function GetMeasurementConfig($type) {
-        $name = "Messwert Typ " . $type;
+        $name = "Messwert Typ ". $type;
         $suffix = "";
         $icon = "";
 
         switch ($type) {
-            case 1: $name = "⚖️ Gewicht"; $suffix = " kg"; $icon = "Scale"; break;
-            case 4: $name = "📏 Größe"; $suffix = " m"; $icon = "Distance"; break;
-            case 5: $name = "💪 Fettfreie Masse"; $suffix = " kg"; $icon = "Scale"; break;
-            case 6: $name = "🥓 Körperfett"; $suffix = " %"; $icon = "Drop"; break;
-            case 8: $name = "🧈 Fettmasse"; $suffix = " kg"; $icon = "Scale"; break;
-            case 9: $name = "❤️ Blutdruck (Diastolisch)"; $suffix = " mmHg"; $icon = "Heart"; break;
-            case 10: $name = "❤️ Blutdruck (Systolisch)"; $suffix = " mmHg"; $icon = "Heart"; break;
-            case 11: $name = "💓 Herzfrequenz"; $suffix = " bpm"; $icon = "Heart"; break;
+            case 1: $name = "⚖ Gewicht"; $suffix = "kg"; $icon = "Scale"; break;
+            case 4: $name = "📏 Größe"; $suffix = "m"; $icon = "Distance"; break;
+            case 5: $name = "💪 Fettfreie Masse"; $suffix = "kg"; $icon = "Scale"; break;
+            case 6: $name = "🥓 Körperfett"; $suffix = "%"; $icon = "Drop"; break;
+            case 8: $name = "🧈 Fettmasse"; $suffix = "kg"; $icon = "Scale"; break;
+            case 9: $name = "❤ Blutdruck (Diastolisch)"; $suffix = "mmHg"; $icon = "Heart"; break;
+            case 10: $name = "❤ Blutdruck (Systolisch)"; $suffix = "mmHg"; $icon = "Heart"; break;
+            case 11: $name = "💓 Herzfrequenz"; $suffix = "bpm"; $icon = "Heart"; break;
             case 12: 
-            case 54: $name = "🩸 SPO2 (Sauerstoffsättigung)"; $suffix = " %"; $icon = "Heart"; break;
+            case 54: $name = "🩸 SPO2 (Sauerstoffsättigung)"; $suffix = "%"; $icon = "Heart"; break;
             case 71: 
-            case 73: $name = "🌡️ Temperatur"; $suffix = " °C"; $icon = "Temperature"; break;
-            case 76: $name = "🦾 Muskelmasse"; $suffix = " kg"; $icon = "Scale"; break;
-            case 77: $name = "💧 Wasseranteil"; $suffix = " kg"; $icon = "Drop"; break;
-            case 88: $name = "🦴 Knochenmasse"; $suffix = " kg"; $icon = "Scale"; break;
-            case 91: $name = "🫀 Pulswellengeschwindigkeit"; $suffix = " m/s"; $icon = "Wind"; break;
-            case 123: $name = "🫁 VO2 Max"; $suffix = " ml/min/kg"; $icon = "Heart"; break;
-            case 130: $name = "🥓 Viszeralfett"; $suffix = " %"; $icon = "Drop"; break;
+            case 73: $name = "🌡 Temperatur"; $suffix = "°C"; $icon = "Temperature"; break;
+            case 76: $name = "🦾 Muskelmasse"; $suffix = "kg"; $icon = "Scale"; break;
+            case 77: $name = "Wasseranteil"; $suffix = "kg"; $icon = "Drop"; break;
+            case 88: $name = "🦴 Knochenmasse"; $suffix = "kg"; $icon = "Scale"; break;
+            case 91: $name = "🫀 Pulswellengeschwindigkeit"; $suffix = "m/s"; $icon = "Wind"; break;
+            case 123: $name = "🫁 VO2 Max"; $suffix = "ml/min/kg"; $icon = "Heart"; break;
+            case 130: $name = "🥓 Viszeralfett"; $suffix = "%"; $icon = "Drop"; break;
             case 135: 
-            case 155: $name = "Gefäßalter"; $suffix = " Jahre"; $icon = "Clock"; break;
-            case 136: $name = "Nervenaktivität"; $suffix = " Punkte"; $icon = "Intensity"; break;
-            case 168: $name = "Extrazelluläres Wasser"; $suffix = " kg"; $icon = "Drop"; break;
-            case 169: $name = "Intrazelluläres Wasser"; $suffix = " kg"; $icon = "Drop"; break;
+            case 155: $name = "Gefäßalter"; $suffix = "Jahre"; $icon = "Clock"; break;
+            case 136: $name = "Nervenaktivität"; $suffix = "Punkte"; $icon = "Intensity"; break;
+            case 168: $name = "Extrazelluläres Wasser"; $suffix = "kg"; $icon = "Drop"; break;
+            case 169: $name = "Intrazelluläres Wasser"; $suffix = "kg"; $icon = "Drop"; break;
             // Body Scan segmented data
-            case 170: $name = "Körperfett Rumpf"; $suffix = " %"; $icon = "Drop"; break;
-            case 171: $name = "Körperfett Arme"; $suffix = " %"; $icon = "Drop"; break;
-            case 172: $name = "Körperfett Beine"; $suffix = " %"; $icon = "Drop"; break;
-            case 173: $name = "Fettfreie Masse (Segment)"; $suffix = " kg"; $icon = "Scale"; break;
-            case 174: $name = "Fettmasse (Segment)"; $suffix = " kg"; $icon = "Scale"; break;
-            case 175: $name = "Muskelmasse (Segment)"; $suffix = " kg"; $icon = "Scale"; break;
+            case 170: $name = "Körperfett Rumpf"; $suffix = "%"; $icon = "Drop"; break;
+            case 171: $name = "Körperfett Arme"; $suffix = "%"; $icon = "Drop"; break;
+            case 172: $name = "Körperfett Beine"; $suffix = "%"; $icon = "Drop"; break;
+            case 173: $name = "Fettfreie Masse (Segment)"; $suffix = "kg"; $icon = "Scale"; break;
+            case 174: $name = "Fettmasse (Segment)"; $suffix = "kg"; $icon = "Scale"; break;
+            case 175: $name = "Muskelmasse (Segment)"; $suffix = "kg"; $icon = "Scale"; break;
             // Newer Body Scan metrics (EDA / Nerve Health)
-            case 196: $name = "Nervenaktivität Score"; $suffix = " Punkte"; $icon = "Intensity"; break;
-            case 197: $name = "Nervenaktivität (Fuß links)"; $suffix = " Punkte"; $icon = "Intensity"; break;
-            case 198: $name = "Nervenaktivität (Fuß rechts)"; $suffix = " Punkte"; $icon = "Intensity"; break;
-            case 226: $name = "Grundumsatz (BMR)"; $suffix = " kcal"; $icon = "Flame"; break;
-            case 227: $name = "Metabolisches Alter"; $suffix = " Jahre"; $icon = "Clock"; break;
+            case 196: $name = "Nervenaktivität Score"; $suffix = "Punkte"; $icon = "Intensity"; break;
+            case 197: $name = "Nervenaktivität (Fuß links)"; $suffix = "Punkte"; $icon = "Intensity"; break;
+            case 198: $name = "Nervenaktivität (Fuß rechts)"; $suffix = "Punkte"; $icon = "Intensity"; break;
+            case 226: $name = "Grundumsatz (BMR)"; $suffix = "kcal"; $icon = "Flame"; break;
+            case 227: $name = "Metabolisches Alter"; $suffix = "Jahre"; $icon = "Clock"; break;
         }
 
         return [
-            'name' => $name,
-            'suffix' => $suffix,
-            'icon' => $icon
+            'name'=> $name,
+            'suffix'=> $suffix,
+            'icon'=> $icon
         ];
     }
 
@@ -353,7 +353,7 @@ class WithingsDevice extends IPSModuleStrict {
                 
                 if ($config['suffix'] != "") {
                     IPS_SetVariableCustomPresentation($childID, [
-                'PRESENTATION' => VARIABLE_PRESENTATION_VALUE_PRESENTATION,'SUFFIX' => $config['suffix']]);
+                'PRESENTATION'=> VARIABLE_PRESENTATION_VALUE_PRESENTATION,'SUFFIX'=> $config['suffix']]);
                 }
                 
                 if ($config['icon'] != "") {
@@ -371,7 +371,7 @@ class WithingsDevice extends IPSModuleStrict {
         $unit = isset($measure['unit']) ? $measure['unit'] : 0;
         $value = $measure['value'] * pow(10, $unit);
 
-        $ident = "Measure_" . $type;
+        $ident = "Measure_". $type;
         $config = $this->GetMeasurementConfig($type);
 
         // Variable dynamisch anlegen falls nicht existent
@@ -393,7 +393,7 @@ class WithingsDevice extends IPSModuleStrict {
                 
                 if ($config['suffix'] != "") {
                     IPS_SetVariableCustomPresentation($varID, [
-                'PRESENTATION' => VARIABLE_PRESENTATION_VALUE_PRESENTATION,'SUFFIX' => $config['suffix']]);
+                'PRESENTATION'=> VARIABLE_PRESENTATION_VALUE_PRESENTATION,'SUFFIX'=> $config['suffix']]);
                 }
                 
                 if ($config['icon'] != "") {
@@ -436,13 +436,13 @@ class WithingsDevice extends IPSModuleStrict {
             77 => "Wasseranteil (kg)"
         ];
 
-        $prompt = "Du bist ein motivierender KI-Gesundheits-Coach. Hier sind meine aufgezeichneten Gesundheitsdaten der letzten " . $days . " Tage.\n";
+        $prompt = "Du bist ein motivierender KI-Gesundheits-Coach. Hier sind meine aufgezeichneten Gesundheitsdaten der letzten ". $days . "Tage.\n";
         $prompt .= "Bitte bewerte den Trend der Messwerte, gib mir ein kurzes Feedback und weise auf Besonderheiten hin (z.B. stark steigender Blutdruck oder Gewichtsverlust).\n";
         $prompt .= "Fasse dich kurz, bleibe positiv und präzise. Antworte in Deutsch und formatiere den Text in einfachem Markdown.\n\n";
 
         $hasData = false;
         foreach ($metrics as $type => $label) {
-            $ident = "Measure_" . $type;
+            $ident = "Measure_". $type;
             $varID = @IPS_GetObjectIDByIdent($ident, $this->InstanceID);
             if ($varID !== false && AC_GetLoggingStatus($archiveID, $varID)) {
                 $values = AC_GetLoggedValues($archiveID, $varID, $startTime, time(), 0);
@@ -469,36 +469,36 @@ class WithingsDevice extends IPSModuleStrict {
         }
 
         $model = $this->ReadPropertyString("GeminiModel");
-        $url = "https://generativelanguage.googleapis.com/v1beta/models/" . $model . ":generateContent?key=" . $apiKey;
+        $url = "https://generativelanguage.googleapis.com/v1beta/models/". $model . ":generateContent?key=". $apiKey;
         
         $payload = [
-            'contents' => [
+            'contents'=> [
                 [
-                    'role' => 'user',
-                    'parts' => [
-                        ['text' => $prompt]
+                    'role'=> 'user',
+                    'parts'=> [
+                        ['text'=> $prompt]
                     ]
                 ]
             ],
-            'generationConfig' => [
-                'temperature' => 0.4
+            'generationConfig'=> [
+                'temperature'=> 0.4
             ]
         ];
 
         $jsonPayload = json_encode($payload);
         
         $script = '<?php
-            $ch = curl_init("' . $url . '");
+            $ch = curl_init("'. $url . '");
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
             curl_setopt($ch, CURLOPT_POST, true);
-            curl_setopt($ch, CURLOPT_POSTFIELDS, ' . var_export($jsonPayload, true) . ');
+            curl_setopt($ch, CURLOPT_POSTFIELDS, '. var_export($jsonPayload, true) . ');
             curl_setopt($ch, CURLOPT_HTTPHEADER, ["Content-Type: application/json"]);
             curl_setopt($ch, CURLOPT_TIMEOUT, 30);
             $result = curl_exec($ch);
             $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
             curl_close($ch);
             
-            WITHINGS_ProcessGeminiResponse(' . $this->InstanceID . ', $result, $httpCode);
+            WITHINGS_ProcessGeminiResponse('. $this->InstanceID . ', $result, $httpCode);
         ';
         IPS_RunScriptText($script);
     }
@@ -517,13 +517,13 @@ class WithingsDevice extends IPSModuleStrict {
                 }
             }
         } else {
-            $this->Log("Fehler bei Gemini API (HTTP $httpCode): " . substr($result, 0, 200));
+            $this->Log("Fehler bei Gemini API (HTTP $httpCode): ". substr($result, 0, 200));
         }
     }
 
     protected function LogMessage(string $Message, int $Type): bool
     {
-        IPS_LogMessage('SmartVillaKunterbunt', 'WithingsDevice: ' . $Message);
+        IPS_LogMessage('SmartVillaKunterbunt', 'WithingsDevice: '. $Message);
         return true;
     }
 
