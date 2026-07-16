@@ -1,13 +1,21 @@
 {
-    "id": "{A34C4F00-11DE-4B2E-9F4D-934C7A3959FE}",
-    "name": "WithingsDevice",
-    "type": 3,
-    "vendor": "",
-    "aliases": [],
-    "parentRequirements": [],
-    "childRequirements": [],
-    "implemented": [],
-    "prefix": "WITHINGS",
-    "author": "Florian Graßinger",
-    "url": "https://github.com/pinkerunicorn/"
+    "id":  "{A34C4F00-11DE-4B2E-9F4D-934C7A3959FE}",
+    "name":  "WithingsDevice",
+    "type":  3,
+    "vendor":  "",
+    "aliases":  [
+
+                ],
+    "parentRequirements":  [
+
+                           ],
+    "childRequirements":  [
+
+                          ],
+    "implemented":  [
+
+                    ],
+    "prefix":  "WITHINGS",
+    "author":  "Florian GraÃŸinger",
+    "url":  "https://github.com/pinkerunicorn/"
 }
