@@ -162,7 +162,13 @@ class WithingsDevice extends IPSModuleStrict {
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_POST, true);
         curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($postData));
+        curl_setopt($ch, CURLOPT_TIMEOUT, 15);
         $response = curl_exec($ch);
+        if ($response === false) {
+            $this->SLog('ERROR', 'API-Anfrage fehlgeschlagen', curl_error($ch));
+            curl_close($ch);
+            return false;
+        }
         curl_close($ch);
 
         $this->SendDebug("OAuth", "Token Response: ". $response, 0);
@@ -225,7 +231,13 @@ class WithingsDevice extends IPSModuleStrict {
             curl_setopt($ch, CURLOPT_HTTPHEADER, [
                 "Authorization: Bearer ". $accessToken
             ]);
+            curl_setopt($ch, CURLOPT_TIMEOUT, 15);
             $response = curl_exec($ch);
+            if ($response === false) {
+                $this->SLog('ERROR', 'API-Anfrage fehlgeschlagen', curl_error($ch));
+                curl_close($ch);
+                break;
+            }
             curl_close($ch);
 
             $data = json_decode($response, true);
