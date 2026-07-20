@@ -3,6 +3,23 @@ declare(strict_types=1);
 
 class WithingsDevice extends IPSModuleStrict {
 
+    private const MEASURE_WEIGHT = 1;
+    private const MEASURE_HEIGHT = 4;
+    private const MEASURE_FAT_FREE_MASS = 5;
+    private const MEASURE_FAT_RATIO = 6;
+    private const MEASURE_FAT_MASS_WEIGHT = 8;
+    private const MEASURE_DIASTOLIC_BP = 9;
+    private const MEASURE_SYSTOLIC_BP = 10;
+    private const MEASURE_HEART_PULSE = 11;
+    private const MEASURE_TEMPERATURE = 12;
+    private const MEASURE_SP02 = 54;
+    private const MEASURE_BODY_TEMPERATURE = 71;
+    private const MEASURE_SKIN_TEMPERATURE = 73;
+    private const MEASURE_MUSCLE_MASS = 76;
+    private const MEASURE_HYDRATION = 77;
+    private const MEASURE_BONE_MASS = 88;
+    private const MEASURE_PWV = 91;
+
     public function Create(): void{
         parent::Create();
         
@@ -308,22 +325,22 @@ class WithingsDevice extends IPSModuleStrict {
         $icon = "";
 
         switch ($type) {
-            case 1: $name = "Gewicht"; $suffix = "kg"; $icon = "Scale"; break;
-            case 4: $name = "Größe"; $suffix = "m"; $icon = "Distance"; break;
-            case 5: $name = "Fettfreie Masse"; $suffix = "kg"; $icon = "Scale"; break;
-            case 6: $name = "Körperfett"; $suffix = "%"; $icon = "Drop"; break;
-            case 8: $name = "Fettmasse"; $suffix = "kg"; $icon = "Scale"; break;
-            case 9: $name = "Blutdruck (Diastolisch)"; $suffix = "mmHg"; $icon = "Heart"; break;
-            case 10: $name = "Blutdruck (Systolisch)"; $suffix = "mmHg"; $icon = "Heart"; break;
-            case 11: $name = "Herzfrequenz"; $suffix = "bpm"; $icon = "Heart"; break;
-            case 12: 
-            case 54: $name = "SPO2 (Sauerstoffsättigung)"; $suffix = "%"; $icon = "Heart"; break;
-            case 71: 
-            case 73: $name = "Temperatur"; $suffix = "°C"; $icon = "Temperature"; break;
-            case 76: $name = "Muskelmasse"; $suffix = "kg"; $icon = "Scale"; break;
-            case 77: $name = "Wasseranteil"; $suffix = "kg"; $icon = "Drop"; break;
-            case 88: $name = "Knochenmasse"; $suffix = "kg"; $icon = "Scale"; break;
-            case 91: $name = "Pulswellengeschwindigkeit"; $suffix = "m/s"; $icon = "Wind"; break;
+            case self::MEASURE_WEIGHT: $name = "Gewicht"; $suffix = "kg"; $icon = "Scale"; break;
+            case self::MEASURE_HEIGHT: $name = "Größe"; $suffix = "m"; $icon = "Distance"; break;
+            case self::MEASURE_FAT_FREE_MASS: $name = "Fettfreie Masse"; $suffix = "kg"; $icon = "Scale"; break;
+            case self::MEASURE_FAT_RATIO: $name = "Körperfett"; $suffix = "%"; $icon = "Drop"; break;
+            case self::MEASURE_FAT_MASS_WEIGHT: $name = "Fettmasse"; $suffix = "kg"; $icon = "Scale"; break;
+            case self::MEASURE_DIASTOLIC_BP: $name = "Blutdruck (Diastolisch)"; $suffix = "mmHg"; $icon = "Heart"; break;
+            case self::MEASURE_SYSTOLIC_BP: $name = "Blutdruck (Systolisch)"; $suffix = "mmHg"; $icon = "Heart"; break;
+            case self::MEASURE_HEART_PULSE: $name = "Herzfrequenz"; $suffix = "bpm"; $icon = "Heart"; break;
+            case self::MEASURE_TEMPERATURE: 
+            case self::MEASURE_SP02: $name = "SPO2 (Sauerstoffsättigung)"; $suffix = "%"; $icon = "Heart"; break;
+            case self::MEASURE_BODY_TEMPERATURE: 
+            case self::MEASURE_SKIN_TEMPERATURE: $name = "Temperatur"; $suffix = "°C"; $icon = "Temperature"; break;
+            case self::MEASURE_MUSCLE_MASS: $name = "Muskelmasse"; $suffix = "kg"; $icon = "Scale"; break;
+            case self::MEASURE_HYDRATION: $name = "Wasseranteil"; $suffix = "kg"; $icon = "Drop"; break;
+            case self::MEASURE_BONE_MASS: $name = "Knochenmasse"; $suffix = "kg"; $icon = "Scale"; break;
+            case self::MEASURE_PWV: $name = "Pulswellengeschwindigkeit"; $suffix = "m/s"; $icon = "Wind"; break;
             case 123: $name = "VO2 Max"; $suffix = "ml/min/kg"; $icon = "Heart"; break;
             case 130: $name = "Viszeralfett"; $suffix = "%"; $icon = "Drop"; break;
             case 135: 
@@ -444,13 +461,13 @@ class WithingsDevice extends IPSModuleStrict {
         $startTime = time() - ($days * 24 * 60 * 60);
         
         $metrics = [
-            1 => "Gewicht (kg)",
-            6 => "Körperfett (%)",
-            11 => "Herzfrequenz (bpm)",
-            9 => "Blutdruck diastolisch (mmHg)",
-            10 => "Blutdruck systolisch (mmHg)",
-            76 => "Muskelmasse (kg)",
-            77 => "Wasseranteil (kg)"
+            self::MEASURE_WEIGHT => "Gewicht (kg)",
+            self::MEASURE_FAT_RATIO => "Körperfett (%)",
+            self::MEASURE_HEART_PULSE => "Herzfrequenz (bpm)",
+            self::MEASURE_DIASTOLIC_BP => "Blutdruck diastolisch (mmHg)",
+            self::MEASURE_SYSTOLIC_BP => "Blutdruck systolisch (mmHg)",
+            self::MEASURE_MUSCLE_MASS => "Muskelmasse (kg)",
+            self::MEASURE_HYDRATION => "Wasseranteil (kg)"
         ];
 
         $prompt = "Du bist ein motivierender KI-Gesundheits-Coach. Hier sind meine aufgezeichneten Gesundheitsdaten der letzten ". $days . "Tage.\n";
